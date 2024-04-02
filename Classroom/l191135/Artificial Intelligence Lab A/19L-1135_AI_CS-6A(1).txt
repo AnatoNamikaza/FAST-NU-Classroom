@@ -1,0 +1,105 @@
+Task #1:
+_______________________________
+def power(a, b):
+	return a**b
+
+#Main Body
+ans =  power(3,2)
+print(ans)
+#Main END
+_______________________________
+
+
+Task #2:
+_______________________________
+def subtotal(arr):
+	ret_arr = arr
+	for i in range(1,len(arr)):
+		ret_arr[i] = ret_arr[i] + ret_arr[i-1]
+	return ret_arr
+
+
+#Main Body
+arr1 = [5.8,2.6,9.1,3.4,7.0]
+#arr1 = [1,1,1,1,1]
+ans =  subtotal(arr1)
+print(ans)
+#Main END
+_______________________________
+
+
+Task #3:
+_______________________________
+def Counter(arr):
+	ret_arr = [0,0,0,0]
+	for i in range(len(arr)):
+		if arr[i] != ' ':
+			ret_arr[0] = ret_arr[0] + 1 
+		if arr[i] == ' ':
+			ret_arr[1] = ret_arr[1] + 1 
+		if arr[i] >= 'A' and arr[i] <= 'Z':
+			ret_arr[2] = ret_arr[2] + 1 
+		if arr[i] >= 'a' and arr[i] <= 'z':
+			ret_arr[3] = ret_arr[3] + 1 
+	return ret_arr
+
+
+#Main Body
+str = 'Hello, I am a student of FAST University.'
+ans =  Counter(str)
+print('No. of letters are:',ans[0])
+print('No. of spaces are:',ans[1])
+print('No. of uppercase letters are:',ans[2])
+print('No. of lowercase letters are:',ans[3])
+#Main END
+_______________________________
+
+
+Task #4:
+_______________________________
+def merge(arr1, arr2):
+	s1 = len(arr1)
+	s2 = len(arr2)
+	i1 = 0
+	i2 = 0
+	arr3 = []
+
+	while (s1 != 0 or s2 != 0):
+		if s1 != 0 and s2 != 0:
+			if arr1[i1] < arr2[i2]:
+				arr3.append(arr1[i1])
+				i1 = i1 + 1
+				s1 = s1 - 1
+			else:					
+				arr3.append(arr2[i2])
+				i2 = i2 + 1
+				s2 = s2 - 1
+		elif s1 == 0:
+			arr3.append(arr2[i2])
+			i2 = i2 + 1
+			s2 = s2 - 1
+		elif s2 == 0:
+			arr3.append(arr1[i1])
+			i1 = i1 + 1
+			s1 = s1 - 1
+	return arr3
+		
+def median(arr1,arr2):
+	arr3 = merge(arr1,arr2)
+	print(arr3)
+	med = 0
+
+	if len(arr3) % 2 == 1:
+		med = float(arr3[int(len(arr3)/2)])
+	else:
+		med = float((arr3[int(len(arr3)/2)] + arr3[(int(len(arr3)/2)-1)]) / 2)
+
+	return med
+#Main Body
+arr1 = [1,3]
+arr2 = [2]
+#arr1 = [1,2]
+#arr2 = [3,4]
+ans =  median(arr1,arr2)
+print(ans)
+#Main END
