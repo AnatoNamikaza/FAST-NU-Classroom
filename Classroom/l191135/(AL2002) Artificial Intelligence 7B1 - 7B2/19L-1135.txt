@@ -1,0 +1,41 @@
+#Q-1
+
+def disvalue(a):
+  if a >= 300:
+    return (a*0.3)
+  elif a >= 200 and a <=300:
+    return (a*0.2)
+  elif a >= 100 and a <=200:
+    return (a*0.1)
+  elif a >= 0 and a <=100:
+    return (a*0.05)
+  else:
+    return 0
+
+def discount(a):
+  return (a - disvalue(a))
+
+x = 250
+
+print(discount(x))
+
+#Q-2
+def low(a):
+  a = a - 1
+  if a == 0:
+    return 1
+  else:
+    return (a*low(a))
+
+def factorial(a):
+  if a < 0:
+    return -1
+  elif a == 0:
+    return 1
+  else:
+    return (a*low(a))
+
+
+x = 8
+
+print(factorial(x))
