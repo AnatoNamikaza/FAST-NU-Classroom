@@ -1,0 +1,113 @@
+% Created 2021-04-18 Sun 23:44
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\author{Zaeem Yousaf}
+\date{Submitted To Maryam Bashir}
+\title{Assignment 2}
+\hypersetup{
+ pdfauthor={Zaeem Yousaf},
+ pdftitle={Assignment 2},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 26.1 (Org mode 9.1.9)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+
+\section{Q \# 1}
+\label{sec:orgf50c97f}
+\section{Q \# 3}
+\label{sec:org2c10529}
+\begin{verbatim}
+findRotation(array,a,b){
+  if(a <= b){
+    if(a == b) return 0; // base_case 
+    else if(b-a == 2){
+      if(array[a] > array[b]) return a; // base case_2
+      else{return b;}      
+    }
+    else if(b-a > 2){
+      int middle = (b-a)/2;
+      if(array[middle] > array[middle-1] && array[middle-1] > array[middle+1]){
+      return middle;
+      }
+      else if(array[a] > array[b] && array[a] > array[middle]){
+	findRotation(array,a,middle-1);
+      }
+      else{
+	return (middle + findRotation(array,middle,b) ; // base case_3
+      }
+    }
+  }
+  else{
+    return 0;
+  }
+}
+
+\end{verbatim}
+
+\begin{verbatim}
+T(n) = T(n/2) + 1
+T(n) = 1 + 1 + 1 + ... 1 = k*1
+n = 2^k
+k = log_2 n
+T(n) = log_2 n
+O(lg n)
+\end{verbatim}
+
+
+\section{Q \# 4}
+\label{sec:org384f2f6}
+\begin{verbatim}
+maximum(array,a,b){
+  if(a <= b){
+    if(a == b) return array[a]; // base_case 
+    else if(b-a == 2){
+      if(array[a] > array[b]) return array[a]; // base case_2
+      else{return array[b];}      
+    }
+    else if(b-a > 2){
+      int middle = (b-a)/2;
+      if(array[middle-1] > array[middle] && array[middle] > array[middle+1]){
+	maximum(array,middle,b);
+      }
+      else if(array[middle-1] < array[middle] && array[middle] < array[middle+1]){
+	maximum(array,0,middle-1);
+      }
+      else{
+	return middle; // base case_3
+      }
+    }
+  }
+  else{
+    return 0;
+  }
+}
+
+\end{verbatim}
+
+\begin{verbatim}
+T(n) = T(n/2) + 1
+T(n) = 1 + 1 + 1 + ... 1 = k*1
+n = 2^k
+k = log_2 n
+T(n) = log_2 n
+O(lg n)
+\end{verbatim}
+\end{document}

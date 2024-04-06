@@ -1,0 +1,143 @@
+----QUESTION#1
+CREATE VIEW ORDERS_AND_PRICES
+AS
+SELECT O.OrderNo, (O.Quantity*I.Price) AS ItemPrice
+FROM OrderDetails O JOIN Items I 
+ON O.ItemNo = I.ItemNo
+GO 
+
+SELECT OrderNo, SUM(ItemPrice) AS total_Order_Price FROM ORDERS_AND_PRICES
+GROUP BY OrderNo
+
+--QUESTION#2
+CREATE VIEW ORDERS_AND_PRICES_2
+AS
+SELECT I.ItemNo, I.Name, I.Price 
+FROM Items I WHERE I.ItemNo in (SELECT ItemNo FROM OrderDetails GROUP BY ItemNo having SUM(Quantity) > 20)
+GO
+
+SELECT * FROM ORDERS_AND_PRICES_2
+
+--QUESTION#3
+CREATE PROCEDURE VALIDATOR
+@in_OrderNo int,@in_ItemNo int,@in_Ordered_Quantity int
+AS BEGIN
+IF ( @in_Ordered_Quantity > (SELECT [Quantity in Store] FROM [Items] WHERE ItemNo = @in_ItemNo) )
+BEGIN
+SELECT 'only '+ CONVERT(varchar(10),[Quantity in Store]) +'  is present, which is less than your required quantity is' FROM [Items] WHERE ItemNo = @in_ItemNo
+END
+ELSE
+BEGIN
+INSERT INTO [OrderDetails] VALUES(@in_OrderNo,@in_ItemNo,@in_Ordered_Quantity)
+Update Items set [Quantity in Store] = [Quantity in Store] - @in_Ordered_Quantity WHERE Items.ItemNo = @in_ItemNo
+END
+END 
+GO
+
+EXEC VALIDATOR
+@in_OrderNo = 4,@in_ItemNo = 400,@in_Ordered_Quantity = 20
+GO
+
+SELECT * FROM Items
+SELECT * FROM OrderDetails
+
+--QUESTION#4
+CREATE PROCEDURE SIGN_UP
+@in_CustomerNo varchar(2),@in_CustomerName varchar(30),@in_CustomerCity varchar(3),@in_CustomerPhoneNo varchar(11),
+@output_Check_flag int Output
+AS BEGIN
+IF (@in_CustomerNo in (SELECT CustomerNo FROM Customers ))
+BEGIN
+set @output_Check_flag = 1
+END
+ELSE IF (@in_CustomerCity is Null)
+BEGIN
+set @output_Check_flag = 2
+END
+ELSE IF Len(@in_CustomerPhoneNo) != 6
+BEGIN
+set @output_Check_flag = 3
+END
+ELSE
+BEGIN
+INSERT INTO Customers VALUES(@in_CustomerNo,@in_CustomerName,@in_CustomerCity,@in_CustomerPhoneNo)
+set @output_Check_flag = 0
+END
+END 
+GO
+
+DECLARE @Flag_Result int = 0 
+
+EXEC SIGN_UP
+@in_CustomerNo = 'C7',@in_CustomerName = 'Max Wilson',@in_CustomerCity = 'ISL',@in_CustomerPhoneNo = '444416',
+@output_Check_flag = @Flag_Result output
+SELECT @Flag_Result AS Sign_Up_Result;
+GO
+
+--QUESTION#5
+CREATE PROCEDURE CANCELLATION
+@in_CustomerNo varchar(2),@in_OrderNo int
+AS BEGIN 
+IF @in_CustomerNo = (SELECT CustomerNo FROM [Order] WHERE OrderNo = @in_OrderNo ) 
+BEGIN
+delete FROM [Order] WHERE OrderNo = @in_OrderNo
+delete FROM [OrderDetails] WHERE OrderNo = @in_OrderNo
+END
+ELSE
+BEGIN
+SELECT 'Order no ' + CONVERT(varchar(2),@in_OrderNo)  + ' is not of ' + CustomerNo + ' ' + [Name] FROM Customers WHERE CustomerNo = @in_CustomerNo
+END
+END
+
+EXECute CANCELLATION
+@in_orderNo= 4,@in_CustomerNo= 'C4'
+
+--QUESTION#6
+CREATE VIEW LOYAL_CUSTR
+AS
+SELECT OrderNo, SUM(ItemPrice) AS total_Order_Price FROM ORDERS_AND_PRICES GROUP BY OrderNo having SUM(ItemPrice) > 2000
+GO
+
+SELECT * FROM LOYAL_CUSTR
+
+--QUESTION#7
+CREATE PROCEDURE CUSTR_POINTS
+@in_CustomerName varchar(30),
+@output_Customer_Points int Output
+AS BEGIN 
+IF ((SELECT CustomerNo FROM [Customers] WHERE [Customers].[Name] = @in_CustomerName) in (SELECT CustomerNo FROM [Order]))
+BEGIN
+set @output_Customer_Points = ((SELECT SUM(OrderDetails.Quantity*Items.Price) AS ItemPrice FROM OrderDetails JOIN Items ON OrderDetails.ItemNo = Items.ItemNo
+JOIN [Order] ON [Order].OrderNo = OrderDetails.OrderNo GROUP BY CustomerNo having CustomerNo = (SELECT CustomerNo FROM [Customers] WHERE [Customers].[Name] = @in_CustomerName)) / 100)
+END
+ELSE
+BEGIN
+SELECT 'Customer with name: '+ @in_CustomerName +' is not found in the records.'
+END
+END
+
+DECLARE @Total_Customer_Points int = 0 
+
+EXEC CUSTR_POINTS
+@in_CustomerName = 'ASMA',
+@output_Customer_Points = @Total_Customer_Points output
+SELECT @Total_Customer_Points AS Total_Points;
+GO
+
+----QUESTION#8
+CREATE VIEW NO_PHONE_CUSTR
+AS
+SELECT * FROM Customers WHERE Phone is not null
+with check option
+GO 
+
+CREATE VIEW Customers_With_No_Phone
+AS
+SELECT * FROM Customers WHERE Phone is not null
+GO
+
+INSERT INTO [Customers_With_No_Phone] VALUES ('a2','will','isl',null)
+
+SELECT * FROM [Customers]
+SELECT * FROM [NO_PHONE_CUSTR]
+SELECT * FROM [Customers_With_No_Phone]

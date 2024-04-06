@@ -1,0 +1,465 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+
+template<class type>
+struct Node {
+	int data;
+	Node<type>* left;
+	Node<type>* right;
+public:
+	Node<type>() {
+		int data = 0;
+		left = right = nullptr;
+	}
+};
+
+template<class type>
+class BST {
+	Node<type>* root;
+public:
+	BST() {
+		root = nullptr;
+	}
+
+	BST(BST& obj) {
+		this->root = new Node<type>;
+		DeepCopy(this->root, obj.root);
+	}
+
+	void operator=(BST& obj) {
+		this->root = new Node<type>;
+		DeepCopy(this->root, obj.root);
+	}
+
+	//--------------------Calculates the sum of all data of all nodes in a specified path----------------------
+	void pathSums(vector<type>& sums) {
+		if (this->root != nullptr) {
+			int sum = 0;
+			PathSumsFinder(sums, this->root, sum);
+		}
+	}
+
+	void PathSumsFinder(vector<type>& v, Node<type>* ptr, int sum) {
+		if (ptr->left == nullptr && ptr->right == nullptr) {
+			sum = sum + ptr->data;
+			v.push_back(sum);
+		}
+		else {
+			sum = sum + ptr->data;
+			if (ptr->left != nullptr) {
+				PathSumsFinder(v, ptr->left, sum);
+			}
+			if (ptr->right != nullptr) {
+				PathSumsFinder(v, ptr->right, sum);
+			}
+		}
+	}
+
+	//--------------------Calculates the sum of all data of all nodes in a specified path----------------------
+	void BuildInorder(type* arr, int n) {
+		root = new Node<type>;
+		int index = 0, lc = 0, rc = 0;
+		root->data = arr[index]; index++;
+		Node<type>* tmp;
+		while (index < n) {
+			tmp = root;
+			if (tmp->right != nullptr) {
+				tmp = tmp->right;
+			}
+
+			while (true) {
+				if (tmp->left == nullptr && rc - lc >= -1) {
+					tmp->left = new Node<type>;
+					tmp->left->data = arr[index];
+					index++;
+				}
+				else if (rc - lc >= -1) {
+					tmp = tmp->left;
+					lc++;
+				}
+				else {
+					break;
+				}
+			}
+
+			tmp = root;
+			if (tmp->right == nullptr) {
+				tmp->right = new Node<type>;
+				tmp->right->data = arr[index];
+				index++; rc++;
+			}
+
+			while (index<n) {
+				if (tmp->left == nullptr && rc - lc >= -1) {
+					tmp->left = new Node<type>;
+					tmp->left->data = arr[index];
+					index++;
+				}
+				else if (tmp->right != nullptr && rc - lc >= -1) {
+					tmp = tmp->right;
+					rc++;
+				}
+				else if (tmp->left == nullptr && tmp->right == nullptr) {
+					break;
+				}
+				else if (tmp->right == nullptr && rc - lc >= -1) {
+					tmp->right = new Node<type>;
+					tmp->right->data = arr[index];
+					index++;
+				}
+				else if (tmp->left != nullptr && rc - lc >= -1) {
+					tmp = tmp->left;
+					lc++;
+				}
+				else {
+					break;
+				}
+			}
+		}
+	}
+	
+	bool insert_Iterative(int n) {
+		if (root == nullptr) {
+			root = new Node<type>;
+			root->data = n;
+			return 1;
+		}
+		else if (root != nullptr) {
+			Node<type>* temp = new Node<type>;
+			temp = this->root;
+			while (true) {
+				if (n == temp->data) {
+					return false;
+				}
+				else if (n > temp->data) {
+					if (temp->right == nullptr) {
+						temp->right = new Node<type>;
+						temp->right->data = n;
+						return 1;
+					}
+					else if (temp->right != nullptr) {
+						temp = temp->right;
+					}
+				}
+				else if (n <= temp->data) {
+					if (temp->left == nullptr) {
+						temp->left = new Node<type>;
+						temp->left->data = n;
+						return 1;
+					}
+					else if (temp->left != nullptr) {
+						temp = temp->left;
+					}
+				}
+			}
+
+		}
+	}
+
+	bool insert_recursuve(int n) {
+		if (root == nullptr) {
+			root = new Node<type>;
+			root->data = n;
+		}
+		else if (root != nullptr) {
+			Node<type>* temp = new Node<type>;
+			temp = this->root;
+			return insert_R(n, temp);
+		}
+	}
+
+	bool insert_R(int n, Node<type>* root) {
+		if (n == root->data) {
+			return false;
+		}
+		else if (n > root->data) {
+			if (root->right == nullptr) {
+				root->right = new Node<type>;
+				root->right->data = n;
+				return 0;
+			}
+			else if (root->right != nullptr) {
+				return insert_R(n, root->right);
+			}
+		}
+		else if (n <= root->data) {
+			if (root->left == nullptr) {
+				root->left = new Node<type>;
+				root->left->data = n;
+				return 0;
+			}
+			else if (root->left != nullptr) {
+				return insert_R(n, root->left);
+			}
+		}
+	}
+
+	bool seacrh_Iterative(int n) {
+		if (root == nullptr) {
+			return 0;
+		}
+		else if (root != nullptr) {
+			Node<type>* temp = new Node<type>;
+			temp = this->root;
+			while (true) {
+				if (n == temp->data) {
+					return 1;
+				}
+				else if (n > temp->data) {
+					if (temp->right == nullptr) {
+						return 0;
+					}
+					else if (temp->right != nullptr) {
+						temp = temp->right;
+					}
+				}
+				else if (n <= temp->data) {
+					if (temp->left == nullptr) {
+						return 0;
+					}
+					else if (temp->left != nullptr) {
+						temp = temp->left;
+					}
+				}
+			}
+		}
+	}
+
+	bool search_recursuve(int n) {
+		if (root == nullptr) {
+			return 0;
+		}
+		else if (root != nullptr) {
+			Node<type>* temp = new Node<type>;
+			temp = this->root;
+			return search_R(n, temp);
+		}
+	}
+
+	bool search_R(int n, Node<type>* root = nullptr) {
+		if (root!=nullptr && n == root->data) {
+			return 1;
+		}
+		else if (root != nullptr && n > root->data) {
+			if (root->right == nullptr) {
+				return 0;
+			}
+			else if (root->right != nullptr) {
+				return search_R(n, root->right);
+			}
+		}
+		else if (root != nullptr && n <= root->data) {
+			if (root->left == nullptr) {
+				return 0;
+			}
+			else if (root->left != nullptr) {
+				return search_R(n, root->left);
+			}
+		}
+	}
+
+	int TotalNodes() {
+		int total = 0;
+
+		if (this->root == nullptr) {
+			return 0;
+		}
+		else if (this->root != nullptr) {
+			if (root->right != nullptr) {
+				count(total, root->right);
+			}
+			if (root->left != nullptr) {
+				count(total, root->left);
+			}
+		}
+
+		return total++;
+	}
+
+	void count(int& n, Node<type>* temp) {
+		n++;
+		if (temp->right != nullptr) {
+			count(n, temp->right);
+		}
+		if (temp->left != nullptr) {
+			count(n, temp->left);
+		}
+	}
+
+	Node<type>* SearchAddress(int n, Node<type>* temp) {
+		if (n == temp->data) {
+			return temp;
+		}
+		if (temp->left != nullptr) {
+			return SearchAddress(n, temp->left);
+		}
+		if (temp->right != nullptr) {
+			return SearchAddress(n, temp->right);
+		}
+	}
+
+	void DeepCopy(Node<type>* temp1, Node<type>* temp2) {
+		temp1->data = temp2->data;
+		if (temp2->left != nullptr) {
+			temp1->left = new Node<type>;
+			DeepCopy(temp1->left, temp2->left);
+		}
+		if (temp2->right != nullptr) {
+			temp1->right = new Node<type>;
+			DeepCopy(temp1->right, temp2->right);
+		}
+	}
+
+	void treeinsertion(Node<type>* temp, int n) {
+		Node<type>* start = SearchAddress(n, temp);
+		this->root = new Node<type>;
+		DeepCopy(this->root, start);
+	}
+
+	BST get_BST(int n) {
+		BST NewTree;
+		NewTree.treeinsertion(root, n);
+
+		return NewTree;
+	}
+
+	void Print_R() {
+		if (root == nullptr) {
+			cout << "tree is empty";
+		}
+		else if (root != nullptr) {
+			Node<type>* temp = new Node<type>;
+			temp = this->root;
+			if (temp->left != nullptr) {
+				PrintNodes(temp->left);
+			}
+			cout << root->data << " ";
+			if (temp->right != nullptr) {
+				PrintNodes(temp->right);
+			}
+		}
+		cout << "\nTree has been printed.\n";
+
+	}
+
+	void PrintNodes(Node<type>* temp) {
+		if (temp->left != nullptr) {
+			PrintNodes(temp->left);
+		}
+		cout << temp->data << " ";
+		if (temp->right != nullptr) {
+			PrintNodes(temp->right);
+		}
+	}
+
+	//Iterative_Print
+
+	//void Print_I() {
+	//	if (root == nullptr) {
+	//		cout << "tree is empty";
+	//	}
+	//	else if (root != nullptr) {
+	//		Node<type>* temp = new Node<type>;
+	//		int Arr = 0;
+	//		for (int x = 0; x <= this->TotalNode<type>s(); x++) {
+	//			temp = this->root;
+	//			while (temp->left != nullptr && temp->left->data > Arr) {
+	//				temp = temp->left;
+	//			}
+	//			if (Arr < temp->data) {
+	//				cout << temp->data << " ";
+	//				Arr = temp->data;
+	//			}
+	//			while (temp->right != nullptr && temp->right->data > Arr) {
+	//				temp = temp->right;
+	//				if (Arr < temp->data) {
+	//					while (temp->left != nullptr && temp->left->data > Arr) {
+	//						temp = temp->left;
+	//					}
+	//					if (Arr < temp->data) {
+	//						cout << temp->data << " ";
+	//						Arr = temp->data;
+	//					}
+	//				}
+	//				while (temp->left != nullptr && temp->left->data > Arr) {
+	//					temp = temp->left;
+	//				}
+	//			}
+	//			if (Arr < temp->data) {
+	//				cout << temp->data << " ";
+	//				Arr = temp->data;
+	//			}
+	//		}
+	//	}
+	//	cerr << "\nTree has been printed.\n";
+	//}
+
+	void DeleteNodes(Node<type>* temp) {
+		if (temp->left != nullptr) {
+			DeleteNodes(temp->left);
+		}
+		if (temp->right != nullptr) {
+			DeleteNodes(temp->right);
+		}
+		Node<type>* Del = temp;
+		temp = nullptr;
+		delete Del;
+		Del = nullptr;
+	}
+
+	void VectorPrint(vector<int>& v) {
+		for (int i = 0; i < v.size(); i++) {
+			cout << v[i] << " ";
+		}
+		cout << "\n";
+	}
+
+
+	~BST() {
+		if (root != nullptr) {
+			Node<type>* temp = new Node<type>;
+			temp = this->root;
+			if (temp->left != nullptr) {
+				DeleteNodes(temp->left);
+			}
+			if (temp->right != nullptr) {
+				DeleteNodes(temp->right);
+			}
+			this->root = nullptr;
+			delete temp;
+			temp = nullptr;
+		}
+	}
+};
+
+
+ int main() {
+	BST<int> tree;
+	tree.insert_Iterative(7);
+	tree.insert_recursuve(4);
+	tree.insert_Iterative(5);
+	tree.insert_recursuve(11);
+	tree.insert_recursuve(9);
+	tree.insert_recursuve(13);
+	tree.insert_Iterative(3);
+	tree.insert_recursuve(2);
+	tree.insert_Iterative(3);
+	tree.insert_recursuve(1);
+	int k = tree.TotalNodes();
+	tree.Print_R();
+//	BST<int> tree2 = tree.get_BST(4);
+//	tree2.Print_R();
+	vector<int> Sums;
+
+	tree.pathSums(Sums);
+	tree.VectorPrint(Sums);
+	int arr[8] = {1,2,4,3,5,7,8,6};
+
+	BST<int> tree2;
+	tree2.BuildInorder(arr,8);
+	tree2.Print_R();
+
+	system("pause");
+ }

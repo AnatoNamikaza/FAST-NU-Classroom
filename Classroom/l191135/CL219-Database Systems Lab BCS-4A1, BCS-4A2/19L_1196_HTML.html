@@ -1,0 +1,42 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="19L_1196_HTML.aspx.cs" Inherits="zaeemPlag.19L_1196_HTML" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title></title>
+    
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div>
+            <asp:TextBox ID="txtName" runat="server"></asp:TextBox>
+
+            <asp:TextBox ID="txtPassword" TextMode="password" runat="server"></asp:TextBox>
+
+            <asp:TextBox ID="txtTextValue" Text="Hello World!" runat="server"></asp:TextBox>
+
+            <asp:TextBox ID="txtComment" TextMode="multiline" runat="server"></asp:TextBox></asp:TextBox>
+
+            <asp:CheckBox ID="chkIsStudent" runat="server"></asp:CheckBox>
+
+            <asp:RadioButton ID="rdMale" GroupName="Gender" runat="server">
+                </asp:CheckBox>
+                <asp:RadioButton ID="rdFemale" GroupName="Gender" runat="server">
+                    </asp:CheckBox>
+
+                    <asp:DropDownList ID="ddlDepartment" runat="server">
+                        <asp:ListItem Text="Select" Value="0"></asp:ListItem>
+                        <asp:ListItem Text="Computer Science" Value="CS"></asp:ListItem>
+                        <asp:ListItem Text="Electrical Engineering" Value="EE"></asp:ListItem>
+                        <asp:ListItem Text="Business Administrator" Value="BBA"></asp:ListItem>
+                        <asp:ListItem Text="Civil Engineering" Value="CV"></asp:ListItem>
+                    </asp:DropDownList>
+
+                    <asp:Button ID="btnSave" Text="SaveForm" runat="server" />
+
+                    <asp:Image ID="Image2" ImageUrl="https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg" runat="server" />
+        </div>
+    </form>
+</body>
+</html>

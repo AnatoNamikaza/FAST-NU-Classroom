@@ -1,0 +1,241 @@
+#include<iostream>
+#include<vector> 
+
+using namespace std;
+
+template <typename k, typename v>
+class BST {
+
+	template <typename k, typename v>
+	struct TNode
+	{
+		k key;
+		v value;
+		TNode<k, v> *leftChild;
+		TNode<k, v> *rightChild;
+		TNode(){
+			leftChild=nullptr;
+			rightChild=nullptr;
+		}
+
+		~TNode(){
+			leftChild=nullptr;
+			rightChild=nullptr;
+		}
+	};
+
+	TNode<k, v> *root;
+
+public:
+	//Methods
+	BST() { root = nullptr; };     //set root to null
+
+	BST(const BST<k, v> & obj) {
+		if (obj.getroot() != nullptr) {
+			CreateRoot();
+			DeepCopyRoot(root, obj.getroot());
+		}
+	}; //copy constructor
+
+	void DeepCopyRoot(TNode<k, v> *root1, TNode<k, v> *root2) {
+		if (root2->leftChild != nullptr) {
+			root1->leftChild = new TNode<k, v>;
+			DeepCopyRoot(root1->leftChild, root2->leftChild);
+		}
+		if (root2->rightChild != nullptr) {
+			root1->rightChild = new TNode<k, v>;
+			DeepCopyRoot(root1->rightChild, root2->rightChild);
+		}
+		root1->key = root2->key; root1->value = root2->value;
+	};
+
+
+
+	///===============
+	///===============
+	///===============
+	///===============
+	///===============
+	///===============
+	///===============
+	///===============
+	///===============
+	TNode<k, v>* getroot() const { return root; }
+	///===============
+	///===============
+	///===============
+	///===============
+	///===============
+	///===============
+	///===============
+	///===============
+
+	void insertRec(k const  key, v const value) {
+		if (root == nullptr) {
+			root = new TNode<k, v>;
+			root->key = key; root->value = value;
+		}
+		else {
+			insertR(root, key, value);
+		}
+	};    /*insert element in the bst. No duplication allowed.*/
+
+	void insertR(TNode<k, v>*root, k const  key, v const value) {
+		if (root != nullptr&&root->key == key) {
+			root->value = value;
+		}
+		else if (root != nullptr&&root->key > key && root->leftChild == nullptr) {
+			root->leftChild = new TNode<k, v>;
+			root->leftChild->key = key; root->leftChild->value = value;
+		}
+		else if (root != nullptr&&root->key > key && root->leftChild != nullptr) {
+			insertR(root->leftChild, key, value);
+		}
+		else if (root != nullptr&&root->key <= key && root->rightChild == nullptr) {
+			root->rightChild = new TNode<k, v>;
+			root->rightChild->key = key; root->rightChild->value = value;
+		}
+		else if (root != nullptr&&root->key <= key && root->rightChild != nullptr) {
+			insertR(root->rightChild, key, value);
+		}
+	};
+
+	void print() const {
+		if (root != nullptr) {
+			PrintR(root);
+			cout << '\n';
+		}
+		else {
+			cout << "tree is empty.\n";
+		}
+	}; /*Print the BST values only not keys using recursive in-order traversal*/
+
+	void PrintR(TNode<k, v>*root) const {
+		if (root->leftChild != nullptr) {
+			PrintR(root->leftChild);
+		}
+		cout << root->value << " ";
+		if (root->rightChild != nullptr) {
+			PrintR(root->rightChild);
+		}
+	};
+
+	BST<k, v> operator +(const BST & b1) {
+		BST <k, v> ResultSum;
+
+		if (b1.getroot() == nullptr && root != nullptr) {
+			ResultSum.CreateRoot();
+			DeepCopyRoot(ResultSum.getroot(), root);
+		}
+		else if (b1.getroot() != nullptr && root == nullptr) {
+			ResultSum.CreateRoot();
+			DeepCopyRoot(ResultSum.getroot(), b1.getroot());
+		}
+		else if (b1.getroot() != nullptr && root != nullptr) {
+			ResultSum.CreateRoot();
+			DeepMerge(ResultSum.getroot(), root, b1.getroot());
+		}
+
+		return ResultSum;
+	};  /* operator such that it merges two binary trees. Each node in the new tree should hold a value equal to the sum of the values of the corresponding nodes of the input trees. If only one input tree has a node in a given position, the corresponding node in the new tree should match that input node. Corresponding key values are also added.*/
+
+	void CreateRoot() {
+		root = new TNode<k, v>;
+	};
+
+	void DeepMerge(TNode<k, v> *SumRoot, TNode<k, v> *root1, TNode<k, v> *root2) {
+		if (root1->leftChild != nullptr || root2->leftChild != nullptr) {
+			SumRoot->leftChild = new TNode<k, v>;
+			if (root1->leftChild != nullptr && root2->leftChild != nullptr) {
+				DeepMerge(SumRoot->leftChild, root1->leftChild, root2->leftChild);
+			}
+			else if (root1->leftChild != nullptr) {
+				DeepCopyRoot(SumRoot, root1->leftChild);
+			}
+			else if (root2->leftChild != nullptr) {
+				DeepCopyRoot(SumRoot, root2->leftChild);
+			}
+		}
+		if (root1->rightChild != nullptr || root2->rightChild != nullptr) {
+			root1->rightChild = new TNode<k, v>;
+			if (root1->rightChild != nullptr && root2->rightChild != nullptr) {
+				DeepMerge(SumRoot->rightChild, root1->rightChild, root2->rightChild);
+			}
+			else if (root1->rightChild != nullptr) {
+				DeepCopyRoot(SumRoot, root1->rightChild);
+			}
+			else if (root2->rightChild != nullptr) {
+				DeepCopyRoot(SumRoot, root2->rightChild);
+			}
+		}
+
+		if (root1 == nullptr&&root2 != nullptr) {
+			SumRoot->key = root1->key + root2->key; SumRoot->value = root1->value + root2->value;
+		}
+	};
+
+	BST find_BST_lessthan_integer_c(int c) {
+		BST <k, v> NewTree;
+
+		DeepCopyRootlessthan_integer_c(c, NewTree, root);
+		return NewTree;
+	};  /* that create a new tree that has all nodes whose keys are less than or equal to integer c in the given tree, maintaining the tree structure of the BST and returns it. You can assume that integer c will be one of the node's key in the BST. */
+
+
+	void DeepCopyRootlessthan_integer_c(int c, BST & b1, TNode<k, v> *root) {
+		if (root->key <= c) {
+			b1.insertRec(root->key, root->value);
+		}
+		if (root->leftChild != nullptr) {
+			DeepCopyRootlessthan_integer_c(c, b1, root->leftChild);
+		}
+		if (root->rightChild != nullptr) {
+			DeepCopyRootlessthan_integer_c(c, b1, root->rightChild);
+		}
+	};
+
+	void DeleteRoot(TNode<k, v>*&root) {
+		if (root->leftChild != nullptr) {
+			DeleteRoot(root->leftChild);
+		}
+		if (root->rightChild != nullptr) {
+			DeleteRoot(root->rightChild);
+		}
+		delete root; root = nullptr;
+	}
+
+	~BST() {
+		if (root != nullptr) {
+			DeleteRoot(root);
+		}
+	};     //clean up memory
+};
+
+int main()
+{
+	system("color 64");
+	BST <int, int> s1;
+	s1.insertRec(3, 100);
+	s1.insertRec(1, 200);
+	s1.insertRec(4, 50);
+	s1.insertRec(2, 765);
+	s1.insertRec(5, 34);
+	s1.print(); //prints 200 765 100 50 34
+	BST <int, int> s2;
+	s2.insertRec(1, 99);
+	s2.insertRec(9, 56);
+	s2.insertRec(5, 60);
+	s2.insertRec(10, 8);
+	s2.print(); //prints 99 60 56 8
+	BST <int, int> s3 = s1 + s2;
+	s3.print();  // prints 200 765 199 60 106 42
+	BST <int, int> s4;
+	s4= s3 + s3;
+	s4.print(); // prints 400 1530 398 120 212 84
+	BST <int, int> s5 = s1.find_BST_lessthan_integer_c(2);
+	s5.print(); //prints 200 765
+	BST <int, int> s6 = s2.find_BST_lessthan_integer_c(9);
+	s6.print(); //prints 99 60 56
+	system("pause");
+	return 0;
+}

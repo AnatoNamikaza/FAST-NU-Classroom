@@ -1,0 +1,1509 @@
+#include<iostream>
+#include<stdlib.h>
+#include<fcntl.h>
+#include<sys/mman.h>
+#include<unistd.h>
+#include<fstream>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include<string.h>
+using namespace std;
+
+int main(){
+    char c;
+    char buffer[500];
+    int size=0;
+    fstream fin("lab.txt");
+    
+    if(fin.is_open())
+    {
+      char c;
+        while(!fin.eof())
+        {
+	  fin >> c;
+	  buffer[size] = c;
+	  size++;
+	}
+        buffer[size]='\0';
+        fin.close();
+    }
+    int fd=shm_open("sharem",O_CREAT|O_EXCL|O_RDWR,0600);
+    
+    if(fd<0){
+        perror("shm_open() error");
+        return EXIT_FAILURE;
+    }
+    ftruncate(fd,size);
+    char *data=(char*)mmap(0,size*sizeof(int),PROT_WRITE|MAP_SHARED|PROT_READ,fd,0);
+    printf("addressed maped by sender: %p\n",data);
+    for(int i=0;i<size;i++)
+    {
+        data[i]=buffer[i];
+    }
+    int pid=fork(); // create new process
+    if(pid==0)
+    {
+      int words=0; // word is considered when a space occures
+        for(int i=0;i<size;i++)
+        {
+            if(data[i]==' ')
+                words++;
+        }
+        ofstream out;
+        out.open("lab.txt",ios::app);
+        out<<endl<<words;
+        out.close();   
+    }
+    else
+    {
+        int lines=0;
+        for(int i=0;i<size;i++)
+        {
+            if(data[i]=='.')
+                lines++;
+        }
+	// create output file stream
+        ofstream out;
+        out.open("lab.txt",ios::app);
+        out<<endl<<lines;
+        out.close();   
+    }
+    munmap(data,size*sizeof(int));
+    close(fd);
+    // unlink shared mem
+    shm_unlink("sharem");
+    return EXIT_SUCCESS;
+}
+
+//======================
+#include "protocol.h"
+#include<stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+int main(){
+
+    int fd= shm_open(NAME,O_RDONLY,0666);
+    if  (fd <0){
+        perror("shm_open()");
+        return EXIT_FAILURE;
+    }
+    
+    int *data=(int *)mmap(0,SIZE,PROT_READ ,MAP_SHARED,fd,0);
+    printf("RECEIVER mapped address: %p\n",data);
+    
+    int sum=0;
+    for (int i=0; i< NUM; ++i){
+      sum+=data[i];
+    }
+    
+    float average = sum/NUM;
+    printf("sum is: %d and average is: %f\n",sum,average);
+    
+    munmap(data,SIZE);
+    close(fd);
+    shm_unlink(NAME);
+    return EXIT_SUCCESS;
+    
+}
+//=================================
+#include "protocol.h"
+#include <stdio.h>
+#include<stdlib.h>
+#include<fcntl.h>
+#include<sys/mman.h>
+#include<unistd.h>
+
+using namespace std;
+
+int main()
+{
+    int fd=shm_open(NAME,O_CREAT|O_EXCL|O_RDWR,0600);
+    if(fd<0)
+    {
+        perror("shm_open()");
+        return EXIT_FAILURE;
+    }
+    ftruncate(fd,SIZE);
+    int *data=(int*)mmap(0,SIZE,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
+    printf("sender mapped address: %p\n",data);
+    for(int i=0;i<NUM;i++)
+    {
+      scanf("%d",&data[i]);
+    }
+    munmap(data,SIZE);
+    close(fd);
+    return EXIT_SUCCESS;
+}
+//===================================
+#include <iostream>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <unistd.h>
+using namespace std;
+int main(){
+  int pid=fork();
+  if(pid == -1) exit(-1);
+  else if(pid == 0){
+    for(int i=0; i< 100; i++)
+      cout << i+1 << " I am child process\n";
+  }
+  else{
+    for(int i=0; i< 100; i++)
+      cout << i+1 << " I am parent process\n";
+  }
+}
+//======================================
+#include <iostream>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <unistd.h>
+using namespace std;
+
+int add(int array[], int size){
+  int s=0;
+  for(int i=0; i< size; i++) s+=array[i];
+  return s;
+}
+
+int avg(int array[], int size){
+  int s=add(array,size);
+  return s/size;  
+}
+
+int max(int array[], int size){
+  int max=array[0];
+  for(int i=0; i< size; i++){
+    if(array[i] > max) max= array[i];
+  }
+  return max;
+}
+
+int main(int argc, char *argv[]){
+  int array[argc-1];
+  for(int i=1; i< argc; i++) {array[i-1] = atoi(argv[i]);}
+  //for(int i=0; i< argc-1; i++) cout << array[i];
+
+  int pid=fork(); // two process created
+  int pid2=fork(); // total 4 process created
+  // 1 parent and 3 three child
+  if(pid > 0 && pid2 > 0){    
+    //parent;
+    wait(NULL);
+  }
+
+  else if(pid > 0 && pid2 == 0){
+    //child
+    int sum = add(array,argc-1);
+    cout << "sum is : " << sum << endl;
+    exit(0);
+  }
+
+  else if(pid == 0 && pid2 > 0){
+    //1st grand child
+    int average = avg(array,argc-1);
+    cout << "average is : " << average << endl;
+    exit(0);
+  }
+  else{
+    //2nd grand child
+    int maximum = max(array,argc-1);
+    cout << "maximum is : " << maximum << endl;
+    exit(0);
+  }
+}
+
+//======================================
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <string.h>
+int main(){
+  char buffer[] = "i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text i am small text ";
+  int len = strlen(buffer);
+  int pid;
+  int fd[2];
+  int fd2[2];
+  if(pipe(fd) == -1 || pipe(fd2) == -1){
+    perror("pipe error\n");
+    exit(EXIT_FAILURE);
+  }
+  pid=fork();
+  if(pid == -1){
+    perror("fork error\n");
+    exit(EXIT_FAILURE);
+  }
+  else if(pid == 0){
+    /* child process reads, processes and write back  */
+    //wait(NULL); /* let the parent write a message */
+    close(fd[1]);
+    read(fd[0],buffer,len);
+    close(fd[0]);
+    for(int i=0; i< len-1; i++){
+      if(buffer[i]-'Z' > 0){
+	/* small letter */
+	buffer[i] = buffer[i]-32;
+      }
+      else if(buffer[i] != ' '){
+	buffer[i] = buffer[i]+32;
+      }
+    }
+    close(fd2[0]);
+    write(fd2[1],buffer,len);
+    close(fd2[0]);
+  }
+  else{    
+    /*parent process writes message to pipe*/
+    printf("original message below ...\n");
+    printf("%s\n",buffer);
+    close(fd[0]); /* close read end of pipe */    
+    write(fd[1],buffer,len);
+    close(fd[1]);
+    wait(NULL); /* wait for the child to complete its job */
+    /* now print that modified message to the screen */
+    close(fd2[1]);
+    read(fd2[0], buffer,len);
+    close(fd2[0]);
+    printf("modified message below ...\n");
+    printf("%s\n",buffer);   
+  }
+  return 0;
+}
+//==============================
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+int main(int argc, char *argv[]){
+  int pid;
+  int fd[2];
+  int max_lenght =100;
+  char buffer[max_lenght];
+  
+  if(pipe(fd) == -1){
+    perror("pipe error\n");
+    exit(EXIT_FAILURE);
+  }
+  pid=fork();
+  if(pid == -1){
+    perror("fork error\n");
+    exit(EXIT_FAILURE);
+  }
+  else if(pid == 0){
+    /* child process reads, processes and write back  */
+    wait(NULL); /* let the parent write a message */
+    close(fd[1]);
+    read(fd[0],buffer,100);
+    close(fd[0]);
+    FILE *fp1;
+    fp1 = fopen(argv[2],"w+");    
+    for(int i=0; i< 100; i++){
+      fputc(buffer[i],fp1);
+    }
+    fclose(fp1);
+    close(fd[0]);
+  }
+  else{
+    int index=0;
+    /*parent process writes message to pipe*/
+    close(fd[0]); /* close read end of pipe */
+    FILE *fp;
+    fp = fopen(argv[1],"r");
+    char c;
+    while(!feof(fp)){
+      c = fgetc(fp);
+      buffer[index++] = c;
+    }
+    buffer[index]='\0';
+    write(fd[1],buffer,index);
+    close(fd[1]);
+    fclose(fp);
+    wait(NULL);
+  }
+  return 0;
+//========================================
+#include<iostream>
+#include<fstream>
+using namespace std;
+
+int avgIndex = 0; 
+float avg[2]; // it will store two averages
+
+bool contains(int arr[], int toSearch, int size){
+  // will help to find duplicates
+  bool found=false;
+  for(int i=0;i<size;i++){
+      if(arr[i]==toSearch){
+	  found=true;
+      }
+  }
+  return found;
+}
+
+void* computeAvg(void *filename){
+  // it reads a file and extracts positive unique integers
+  int buffer[500]; // max rows in a file
+  int rows = 0;
+  string line;
+  ifstream in((char *)filename);
+  if(in.is_open()){
+    while(!in.eof()){
+      getline(in,line);
+      if(line.length() > 0){
+	//cout << line << endl;
+	int nextNumber = atoi(line.c_str());
+	if(!contains(buffer,nextNumber,rows) && nextNumber > 0){
+	  buffer[rows] = nextNumber;
+	  rows++;
+	}	
+      }
+    }
+  }
+
+  in.close();
+  int sum = 0;
+  for(int i=0; i < rows; i++){
+    sum = sum + buffer[i];
+  }
+
+  avg[avgIndex++]= sum/(float)rows;
+  return filename; // to avoid return error
+  //return avg;
+}
+
+int main(int args, char *argv[]){
+  pthread_t t1;
+  pthread_t t2;
+  char *f1 = argv[1];
+  char *f2 = argv[2];
+
+  pthread_create(&t1,NULL,&computeAvg, f1);
+  pthread_create(&t2,NULL,&computeAvg, f2);
+  
+  pthread_join(t1,NULL);
+  pthread_join(t2,NULL);
+  
+  cout << "--------------------\n";
+  cout << "average of one file: " << avg[0] << endl;
+  cout << "--------------------\n";
+  cout << "average of other file: " << avg[1] << endl;
+  cout << "--------------------\n";
+  cout << "combined average: " << (avg[0] + avg[1])/2.0 << endl;
+  cout << "--------------------\n";
+
+  //return 0;
+}
+
+}
+//===================================
+// g++ terminal.cpp -o t; ./t
+#include <iostream>
+#include<stdlib.h>
+#include<stdio.h>
+#include<unistd.h>
+#include <string>
+#include<sstream>
+#include<string.h>
+#include<sys/wait.h>
+#include<fcntl.h>
+#include<sys/stat.h>
+using namespace std;
+
+char *current_dir = new char [100];
+
+void get_all_path(string pathenv, char *pathlist[]);
+int get_no_of_paths(string pathenv);
+string concate(string str1,string str2);
+string look_up_command(char *paths[],int size,string current_dir,string command);
+bool contains(string command, char x);
+string drop(string command,char x);
+bool is_shell_command(string command);
+string read_command();
+void output_redirection();
+void split(string command, char x, string &left, string &right);
+bool has_pipe(string command);
+void remove_trailing_spaces(string &command);
+string get_first_word(string command);
+string extract_path(string command);
+void handle_redirection(string left_command,string file_name,char action,int counter);
+// whether to read from file or to write to a file
+
+struct command_t{
+  char *name;
+  int argc;
+  char *argv[];
+};
+
+void parse_command(command_t *argv,string command);
+int execute_command(string command, bool pipe_exits,int cmd_number);
+int var_pipe[2];
+int fd[2];
+int fd2[2];
+int std_output;
+int main(){
+  pipe(var_pipe); // this pipe will share local variabl etc
+  getcwd(current_dir,100);
+
+    
+  string command;
+  while(command != "exit"){
+    
+    command = read_command();
+
+    string first_word=get_first_word(command);
+    if(first_word == "cd"){
+      // cd is special only which parent executes
+      // to keep the path updated
+      string cd_path = extract_path(command);
+      chdir(cd_path.c_str());
+      getcwd(current_dir,100);
+    }
+    else{
+      pipe(fd);
+      pipe(fd2);
+      int init_pipe_val=0; // output is not piped
+      write(var_pipe[1],&init_pipe_val,sizeof(int));
+
+      int cmd_counter=0;
+      string left; //command on left side of pipe
+      while(has_pipe(command)){
+	split(command,'|',left,command); //reduce command
+	//cout << "reduced command <" << command << ">\n";
+	if(contains(left,'<')){
+	  // e.g wc -l < file.txt
+	  string left_command;
+	  string file_name;
+	  split(left,'<',left_command,file_name);
+	  handle_redirection(left_command,file_name,'r',cmd_counter); // read flag
+	}
+	else if(contains(left,'>')){
+	  // e.g echo hello > file.txt
+	  string left_command;
+	  string file_name;
+	  split(left,'>',left_command,file_name);
+	  cout << left_command << endl;
+	  handle_redirection(left_command,file_name,'w',cmd_counter); // write flage
+	}
+	else{
+	  // simple command without < and > 
+	  // ls|wc -l
+	execute_command(left,true,cmd_counter);
+	}
+	if(cmd_counter %2 ==0){
+	  close(fd[1]); //-================
+	  pipe(fd2);
+	}
+	if(cmd_counter == 1) {
+	  close(fd2[1]);
+
+	  // close(fd[0]);
+	  // close(fd[1]);
+
+	  pipe(fd);
+	}
+	cmd_counter++;
+      }
+      //wait(NULL);
+      if(command !=""){      
+	if(contains(command,'<')){
+	  // e.g wc -l < file.txt
+	  string left_command;
+	  string file_name;
+	  split(command,'<',left_command,file_name);
+	  handle_redirection(left_command,file_name,'r',cmd_counter); // read flag
+	}
+	else if(contains(command,'>')){
+	  // e.g echo hello > file.txt
+	  string left_command;
+	  string file_name;
+	  split(command,'>',left_command,file_name);
+	  //cout << left_command << endl;
+	  handle_redirection(left_command,file_name,'w',cmd_counter); // write flage
+	}
+	else{
+	  execute_command(command,false,cmd_counter);
+	}
+	  //cout << "exited normally\n";
+	close(fd[1]);
+	close(fd[0]);
+	close(fd2[0]);
+	close(fd2[1]);
+
+	//cout << "exited normally\n";
+      }
+    
+    }    
+  }
+  //wait(NULL);  
+  return 0;
+}
+
+
+
+void get_all_path(string pathenv, char*pathlist[]){
+  //transform : into space
+  int i=0;
+  int path_counter =0;
+  while(pathenv[i]){
+    if(pathenv[i] == ':') pathenv[i] = ' ';
+    i++;
+  }
+  istringstream iss(pathenv);
+  int index=0;
+  do{
+    char *buffer = new char[50];
+    iss >> buffer;
+    pathlist[index++] = buffer;
+  }
+  while(iss);
+}
+
+int get_no_of_paths(string pathenv){
+  //transform : into space
+  int i=0;
+  int path_counter =0;
+  while(pathenv[i]){
+    if(pathenv[i] == ':') path_counter++;
+    i++;
+  }
+  return path_counter+1;
+}
+
+string concate(string str1,string str2){
+  string result = str1+str2;
+  return result;
+}
+
+string look_up_command(char *paths[],int size, string current_dir,string command){
+  // its looks 'command e.g gcc' in all 'paths' e.g ["/usr/bin",...]
+  // of 'size'
+  //   it returns the complete path of command
+  // ============== first of all look in relative path
+  if(contains(command,'/')){
+    //it is externel command with reletive or absolute path
+    if(command[0] == '/'){
+      // if first char is '/' then no need to make file path
+      // it will be users responsibility to provide full path
+      if(!access(command.c_str(),F_OK)) return command;
+    }
+    else{
+      // it is relative path
+      // first word of command
+      istringstream cmd(command);
+      cmd >> command;
+
+      if(command[0] == '.') command = drop(command,'.');
+      string file = current_dir + command;
+      //cout << file << endl;
+      if(!access(file.c_str(),F_OK)) return file;
+      else{return "";}
+
+      
+    }
+  }
+  else{
+    //first word of command
+    istringstream cmd(command);
+    cmd >> command;
+      
+    command = "/"+command;
+    for(int i=0; i< size; i++) {
+      string file = concate(string(paths[i]),command);      
+      if(!access(file.c_str(),F_OK)) {
+	//cout << "found in bin\n";
+	return file;
+      }      
+    }
+  }
+  return "";
+}
+
+bool contains(string command,char x){
+  for(int i=0; i< command.length(); i++){
+    if(command[i] == x) return true;
+  }
+  return false;
+}
+
+string drop(string command,char x){
+  //it removes the unwanted char from a string 
+  string result;
+  for(int i=1; i< command.length(); i++){
+    result=result+command[i];
+  }
+  return result;
+}
+
+void parse_command(command_t *argv,string command){
+  istringstream iss(command);
+  string cmd_name;
+  iss >> cmd_name;
+  argv->name = new char[cmd_name.length()+1];
+  strcpy(argv->name,cmd_name.c_str());
+
+  int i=0;
+  int arg_counter =0;
+  while(command[i]){
+    if(command[i] == ' ') arg_counter++;
+    i++;
+  }
+  arg_counter += 1;
+  argv->argc = arg_counter;
+  istringstream rss(command); // reset head
+  
+  //argv->argv = new char*[arg_counter];
+  for(int i=0; i< arg_counter; i++){
+    string arg;
+    rss >> arg;
+    argv->argv[i] = new char[arg.length()+1];
+    strcpy(argv->argv[i],arg.c_str());
+  }
+  argv->argv[arg_counter] = NULL;
+}
+
+bool is_shell_command(string command){
+  istringstream iss(command);
+  string name;
+  iss >> name;
+  string shell_commands[] = {"cd","help"};
+  for(int i=0; i< 2; i++){
+    for(int i=0; i< sizeof(shell_commands)/sizeof(string); i++){
+      //    cout << "-----------" << shell_commands[i] << endl;
+      if(name == shell_commands[i]) return true;
+    
+    }
+  }
+  return false;    
+}
+
+string read_command(){
+  string command;
+  char hostname[50];
+  gethostname(hostname,50);  
+  cout << getenv("USER") << "@" << hostname << ":" << current_dir << "$ ";
+  getline(cin, command);
+  return command;
+  
+}
+
+void split(string command, char x, string &left, string &right){
+  int index=0;
+  left="";
+  right="";
+  while(index < command.length() && command[index] != x){
+    left = left+command[index];
+    index++;
+  }
+  left=left+'\0';
+
+  index=index+1;
+  while(index < command.length()){
+    right = right+command[index];
+    index++;
+  }
+  right=right+'\0';
+}
+
+
+int execute_command(string command, bool pipe_exits,int cmd_number){
+  int status;
+  remove_trailing_spaces(command);
+  int npaths = get_no_of_paths(getenv("PATH"));
+  char *paths[npaths];
+  get_all_path(getenv("PATH"),paths);
+  //string command;
+  getcwd(current_dir,100);
+
+  int pid = fork();
+  if(pid == -1){cout << "child process was not created \n";}
+  else if(pid ==0){
+    // child process created successfully
+    string file = look_up_command(paths,npaths,current_dir,command);
+
+    //cout << file << "-----------\n";
+    if(file != "" || !is_shell_command(command)){      
+      //cout << "executed by execv\n";
+      command_t *command_set = new command_t;
+      parse_command(command_set,command);
+      int piped;
+      read(var_pipe[0],&piped,sizeof(int));
+      if(pipe_exits == false && piped == 0){
+      	// no need to modify either input or output redirection
+      	// command is either single
+      	//cout << "no pipe\n";
+      }
+	
+      else if(pipe_exits && piped == 1 && cmd_number%2==0 && cmd_number > 0) {	
+      	// redirect input and output
+      	// may be middle command	
+      	// cout << "setting out redirection to pipe fd2\n";
+      	// cout << "setting in redirection from pipe fd\n";
+      	piped=1;
+      	write(var_pipe[1], &piped,sizeof(int));
+      	//close(var_pipe[0]);
+      	// above line signals next process that previous output was piped
+      	// hence read from pipe
+      	dup2(fd2[0],0);
+      	// and further more output of this process should also be piped
+      	//dup2(fd[1],1); //============
+	dup2(fd[1],1);
+	
+      }
+      else if(pipe_exits && piped == 1 && cmd_number%2==1 && cmd_number > 0) {
+      	// redirect input and output
+      	// may be middle command	
+      	// cout << "setting out redirection to pipe fd2 mid case\n";
+      	// cout << "setting in redirection from pipe fd mid case\n";
+      	piped=1;
+      	write(var_pipe[1], &piped,sizeof(int));
+      	//close(var_pipe[0]);
+      	// above line signals next process that previous output was piped
+      	// hence read from pipe
+      	dup2(fd[0],0); //============
+      	// and further more output of this process should also be piped
+      	//dup2(fd[1],1); //============
+	dup2(fd2[1],1);
+	
+      }
+      
+      //parse_command(command_set,command);
+      else if(pipe_exits == true && piped == 0 && cmd_number==0) {
+      	// redirect output only
+      	// may first command
+      	//cout << "setting out redirection to pipe fd\n";
+      	//*piped=1;
+      	piped=1;
+      	write(var_pipe[1], &piped,sizeof(int));
+      	// output of this process should  be piped
+      	dup2(fd[1],1);
+      }
+      else if(pipe_exits == false && piped==1 && cmd_number%2 ==0){
+      	//cout << "redirect input from pipe only many pipe last case\n";
+      	// redirect input only
+      	// may last command	
+	//============
+	close(fd2[1]);
+	//============
+      	dup2(fd2[0],0);
+	//close(fd[1]); //+===========
+	// close(fd[0]);
+	// close(fd2[1]);
+	// close(fd2[0]);      	//close(fd[0]);
+      	//cout << "redirection from pipe has been done\n";
+      }
+
+      else if(pipe_exits == false && piped==1 && cmd_number%2==1){
+      	//cout << "redirect input from pipe last case\n";
+      	// redirect input only
+      	// may last command	
+	close(fd[1]);
+      	dup2(fd[0],0);
+      	//cout << "redirection from pipe has been done\n";
+      }
+
+      else{
+	cout << "this case is not handled \n";
+      }
+
+      //cout << "----- <" << file << " " << command_set->argv[1] << " >---------\n";
+      execv(file.c_str(), command_set->argv);
+      exit(0);
+    }
+  }
+  else{
+    //parent is waiting for child to finish
+    if(command[command.length()-1] != '&'){
+      waitpid(pid,&status,0);}
+    else{
+      cout << "child with pid = " << pid << " is running in background\n";
+    }
+  }
+}
+
+bool has_pipe(string command){
+  return(contains(command,'|'));
+}
+
+void remove_trailing_spaces(string &command){
+  // remove spaces from front
+  string refined=""; // no spaces at frong
+  int index=0;
+  while(command[index] == ' ') index++;
+
+  int last_index=index; // from where trailing spaces may start
+  int start_index=index;
+  while(index < command.length() ){
+    if(command[index] != ' ' && command[index] != '\0') last_index = index;    
+    refined = refined+command[index];
+    index++;
+  }
+  // refined may contain spaces at the end
+  string pure="";
+  for(int i=0; i <=last_index-start_index; i++) pure+=refined[i];
+  pure[last_index+1] = '\0';
+  //cout << "pure <" << pure << ">\n";
+  command=pure;
+  //cout << start_index << " " << last_index << endl;
+}
+
+string get_first_word(string command){
+  string first;
+  istringstream cmd(command);
+  cmd >> first;
+  return first;
+}
+
+string extract_path(string command){
+  string second;
+  istringstream cmd(command);
+  cmd >> second;
+  cmd >> second;
+  return second;
+}
+
+void handle_redirection(string command,string file_name,char action,int cmd_counter){
+  int status;
+  remove_trailing_spaces(command);
+  remove_trailing_spaces(file_name);
+  int pid=fork();
+  if(pid==0 && (action == 'w' || action == 'r')){
+    remove_trailing_spaces(command);
+    int npaths = get_no_of_paths(getenv("PATH"));
+    char *paths[npaths];
+    get_all_path(getenv("PATH"),paths);
+    //string command;
+    getcwd(current_dir,100);
+
+    string file = look_up_command(paths,npaths,current_dir,command);
+
+    //cout << file << "-----------\n";
+    if(file != "" || !is_shell_command(command)){      
+      //cout << "executed by execv\n";
+      command_t *command_set = new command_t;
+      parse_command(command_set,command);
+      //---------------------------
+      if(action == 'r'){
+	//open file
+	// set redirection
+	// execute execv
+	int in = open(file_name.c_str(), O_RDONLY);
+	dup2(in, 0);
+	close(in);
+      }
+      else if(action == 'w'){
+	int out = open(file_name.c_str(), O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
+	//===============
+	if(cmd_counter %2 == 1)
+	  dup2(fd[0],0);
+	else{
+	  dup2(fd2[0],0);
+	}
+	//===============
+	dup2(out,1);
+	close(out);
+      }
+      else{
+	cout << "wrong flag\n";
+      }
+      //---------------------------
+      execv(file.c_str(), command_set->argv);
+      exit(0);
+    }
+  
+  }
+  else{
+    if(command[command.length()-1] != '&')
+      waitpid(pid,&status,0);
+    else{
+      cout << "child with pid = " << pid << " is running in background\n";
+    }
+  }
+}
+//=================================
+#define SNAME "/mysem"
+
+Use sem_open with O_CREAT in the process that creates them
+
+sem_t *sem = sem_open(SNAME, O_CREAT, 0644, 3); /* Initial value is 3. */
+
+Open semaphores in the other processes
+
+sem_t *sem = sem_open(SEM_NAME, 0); /* Open a preexisting semaphore. */
+//==================================
+#include <iostream>
+#include <pthread.h>
+#include <semaphore.h>
+/* 
+logic: 
+thread1 is opend at start and other two closed
+thread1 opens thread2 without posting its lock
+thread2 opens thread3 without posting its lock
+thread3 opens thread1 without posting its lock
+it runs in cycle
+*/
+using namespace std;
+
+sem_t th1_lock;
+sem_t th2_lock;
+sem_t th3_lock;
+
+//Th1
+void* th1(void *){
+  while(1){
+    sem_wait(&th1_lock);
+    cout << "a";
+    sem_post(&th2_lock);
+  }
+}
+
+//Th2
+void* th2(void *){
+  while(1){
+    sem_wait(&th2_lock);
+    cout << "b";
+    sem_post(&th3_lock);
+  }
+}
+
+//Th3
+void* th3(void *){
+  while(1){
+    sem_wait(&th3_lock);
+    cout << "c ";
+    sem_post(&th1_lock);
+  }
+}
+
+
+int main(){
+
+  sem_init(&th1_lock,0,1); // allow thread1 at start
+  sem_init(&th2_lock,0,0); // don't allow thread2 one at start
+  sem_init(&th3_lock,0,0); // don't allow thread3 one at start
+
+  pthread_t t1,t2,t3;
+  pthread_create(&t1,NULL,&th1,NULL);
+  pthread_create(&t2,NULL,&th2,NULL);
+  pthread_create(&t3,NULL,&th3,NULL);
+
+
+  pthread_join(t1,NULL);
+  pthread_join(t2,NULL);
+  pthread_join(t3,NULL);
+}
+
+//===========================
+#include <iostream>
+#include <pthread.h>
+#include <semaphore.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <unistd.h>
+using namespace std;
+/* 
+wrong solution
+explanation: all threads will wait just before 'doSomeThing' until last threads wchich will flip open the lock. Then only one thread will perform 'doSomething' and others will remain trapped
+
+to correct, each thread will post just after 'doSomething'
+*/
+
+
+int n = 5;
+int count = 0;
+
+sem_t mutex;
+sem_t barrier;
+void* foo(void *){
+  
+  sem_wait(&mutex);
+  count = count + 1;  
+  sem_post(&mutex);
+  
+  if (count == n)
+    sem_post(&barrier);
+
+  pthread_t self = pthread_self();
+  cout << "waiting thread  " << self << endl;
+  sem_wait(&barrier);
+  //doSomeThing();
+  sleep(1); // just for creating illusion of 'doingSomething'
+  cout << "I am executed by " << self << endl;
+  sem_post(&barrier); // additional line for correct solution
+
+  return NULL;
+}
+
+
+int main(){
+
+  sem_init(&mutex,0,1); // setting mutex to 1
+  sem_init(&barrier,0,0);// setting barrier to 0
+
+  pthread_t *threads = new pthread_t [n];
+  for(int i=0; i < n; i++){
+      pthread_create(&threads[i],NULL,&foo,NULL);
+  }
+  
+  for(int i=0; i< n; i++){
+      pthread_join(threads[i],NULL);
+  }
+}
+//===========================================
+#include <iostream>
+#include <pthread.h>
+#include <semaphore.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <unistd.h>
+using namespace std;
+
+class Stack;
+void* pushOnStack(void *value);
+void* popFromStack(void *value);
+
+sem_t push_update_lock, pop_lock, push_lock, pop_update_lock;
+int n = 200; // number of threads
+int stackSize = 30;
+
+class Stack {
+private:
+  int* a; // array for stack
+  int max; // max size of array
+  int top; // stack top
+public:
+  Stack(int m){
+    a = new int[m]; max = m; top = 0;
+  }
+  void push(int x) {
+    pthread_t self = pthread_self();
+    if(top == max){
+      // if stack is full then wait
+      cout << "thread: " <<  self << "waiting ... to push: [ " << top << " th]\n";
+      sem_wait(&push_lock);
+      
+    }
+    else if(top == 0){sem_post(&pop_lock);}
+
+    cout << "thread: " <<  self << " ready to push [ " << top << " th]\n";
+    sem_wait(&push_update_lock);
+    if(top < max){
+      // critical section
+      a[top] = x;
+      cout << "thread: " <<  self << " pushed [ " << top << " th] sucessfully\n";
+      ++top;
+    }
+    sem_post(&push_update_lock);
+  }
+  
+  int pop() {
+    pthread_t self = pthread_self();
+    if(top == 0){
+      // if stack is empty then wait
+      cout << "thread: " <<  self << " waiting ... to pop: [ " << top << " th]\n";
+      sem_wait(&pop_lock);
+      return -1;
+    }
+    else if(top == max) sem_post(&push_lock);
+
+    cout << "thread: " <<  self << " ready to pop [ " << top << " th]\n";
+    sem_wait(&pop_update_lock);
+    int tmp = top;
+    if(top > 0){
+      // critical section
+      cout << "thread: " <<  self << " poped [ " << top << " th] sucessfully\n";
+      --top;
+    }
+    sem_post(&pop_update_lock);
+    return a[tmp];
+  }
+};
+
+
+Stack stack(stackSize);
+int main(){
+
+  sem_init(&pop_lock,0,0); // initially set pop lock as stack is empty
+  sem_init(&push_lock,0,1);// initially remove push lock
+  sem_init(&push_update_lock,0,1);// set remove update lock
+  sem_init(&pop_update_lock,0,1);// set remove update lock
+
+  pthread_t *threads = new pthread_t [n];
+  for(int i=0; i < n; i++){
+    if(i%2 == 0)
+      pthread_create(&threads[i],NULL,&popFromStack,NULL);
+    else{
+      int valueToPush = i;
+      pthread_create(&threads[i],NULL,&pushOnStack,&valueToPush);
+    }
+  }
+  
+  for(int i=0; i< n; i++){
+    pthread_join(threads[i],NULL);
+  }
+}
+
+void* pushOnStack(void *value){
+  stack.push(*(int*)value);
+  return NULL;
+}
+
+void* popFromStack(void *value){
+  stack.pop();
+  return NULL;
+}
+
+//=======================================
+#include <iostream>
+#include <pthread.h>
+#include <semaphore.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <unistd.h>
+using namespace std;
+class Ladder;
+void* move_up(void *);
+void* move_down(void *);
+
+class Ladder{
+private:
+  int state; // 0: free, 1: moving up, 2: moving down
+  sem_t top_gate, bottom_gate, update_lock; // three semaphores
+  int n_robots; // number of robots available on the ladder
+public:
+  Ladder(){
+    state = 0; // initially ladder is empty
+    sem_init(&top_gate,0,1); // top gate is open
+    sem_init(&bottom_gate,0,1); // bottom gate is open
+    sem_init(&update_lock,0,1); 
+  }
+
+  void climbe_up(){    
+    // if someone coming down then wait
+    if(state == 2){
+      cout << "waiting to go up" << endl;
+      sem_wait(&bottom_gate);
+    }
+    else if(state == 1){
+      // someone already moving up which has locked top_gate
+      // this robot will not not take care of lock of top_gate
+      sem_wait(&update_lock);
+      n_robots ++;
+      sem_post(&update_lock);
+      cout << "moving up..." << endl;
+      //sleep(1); // moving up takes time
+      cout << "reached the ladder up " << " state == 1 " << endl;
+      
+      sem_wait(&update_lock);
+      //critical section
+      n_robots --;
+      if(n_robots <=0){
+	sem_post(&top_gate);
+	sem_post(&bottom_gate);
+	state = 0;
+      }
+      sem_post(&update_lock);
+    }
+    else{
+      // ladder is empty
+      // this robot will lock top_gate first
+
+      sem_wait(&update_lock);
+      state = 1;
+      sem_wait(&top_gate); // this gate was initially opened
+      n_robots ++;
+      sem_post(&update_lock);
+      
+      cout << "moving up..." << endl;
+      //sleep(1); // moving up takes time
+      cout << "reached the ladder up " << " else " << endl;
+
+      sem_wait(&update_lock);
+      //critical section
+      n_robots--; // one robot has left the ladder
+      if(n_robots <=0){
+	sem_post(&top_gate);
+	sem_post(&bottom_gate);
+	state = 0;
+      }
+      sem_post(&update_lock);
+    }
+  }
+  
+  void climbe_down(){
+    // if someone coming up then wait
+    if(state == 1){
+      cout << "waiting to move down" << endl;
+      sem_wait(&top_gate);
+    }
+    else if(state == 2){
+      // someone already moving down which has locked bottom_gate
+      // this robot will not not take care of lock of bottom_gate
+      sem_wait(&update_lock);
+      n_robots++;
+      sem_post(&update_lock);
+      
+      cout << "moving down..." << endl;
+      //sleep(1); // moving down takes time
+      cout << "reached the ladder down" << endl;
+
+      sem_wait(&update_lock);
+      //critical section
+      n_robots--;
+      if(n_robots <=0){
+	sem_post(&top_gate);
+	sem_post(&bottom_gate);
+	state = 0;
+      }
+      sem_post(&update_lock);
+    }
+    else{
+      // ladder is empty
+      // this robot will lock bottom_gate first
+      sem_wait(&update_lock);
+      state = 1;
+      sem_wait(&bottom_gate); // this gate was initially opened
+      n_robots++;
+      sem_post(&update_lock);
+            
+      cout << "moving down..." << endl;
+      //sleep(1); // moving down takes time
+      cout << "reached the ladder down" << endl;
+
+      sem_wait(&update_lock);
+      //critical section
+      n_robots--;
+      if(n_robots <=0){
+	sem_post(&top_gate);
+	sem_post(&bottom_gate);
+	state = 0;
+      }
+      sem_post(&update_lock);
+    }
+  }
+};
+
+Ladder long_ladder;
+int n=9; // number of robots
+
+int main(){
+  pthread_t *threads = new pthread_t[n];
+  for(int i=0; i< n; i++){
+    if(i%2 == 0){
+      // move the robot randomly up
+      pthread_create(&threads[i],NULL,&move_up,NULL);
+      cout << i << " ";
+    }
+    else{
+      // move the robot randomly down
+      pthread_create(&threads[i],NULL,&move_down,NULL);
+      cout << i << " ";
+    }
+  }
+  
+  cout << "-----------\n";
+  for(int i=0; i< n; i++){
+    pthread_join(threads[i],NULL);
+    cout << i+1 << " is leaving...\n";
+  }
+  
+  return 0;
+}
+
+void* move_up(void *){
+  long_ladder.climbe_up();
+  return NULL;
+}
+void* move_down(void *){
+  long_ladder.climbe_down();
+  return NULL;
+}
+//=======================================
+
+#include <iostream>
+#include <pthread.h>
+#include <semaphore.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#define BARBAR_SLEEPING 2
+#define BARBAR_BUSY 1
+#define BARBAR_FREE 0
+
+using namespace std;
+class HairSaloon;
+void *goToHairSaloon(void *);
+
+class HairSaloon{
+private:
+  int seats; // seats for wating customers
+  int empty_seats; // empty slots plus barbar seat
+  int barbar_state; // 0: barbar free, 1: busy, 2: sleeping
+
+  sem_t cutting_lock, arival_lock, barbar_free, mutex;
+  
+public:
+  HairSaloon(int waiting_seats){
+    seats = waiting_seats;
+    empty_seats = seats+1; // all seats are empty_seats including the barbar chair
+
+    sem_init(&cutting_lock,0,1); // barbar is ready to cut hair
+    sem_init(&arival_lock,0,1); // customer is ready to get in
+    sem_init(&mutex,0,1); // mutex lock
+    sem_init(&barbar_free,0,0); // there is no one, barbar cannot cut hair
+    barbar_state = 2;  // initially barbar is sleeping
+  }
+
+  void hair_cut(){
+    // if barber is free then move customer to the seat
+    if(barbar_state == BARBAR_BUSY){
+      cout << "barber is busy in cutting ... \n";
+    }
+    else if(empty_seats > 0 && barbar_state == BARBAR_FREE){
+      sem_wait(&mutex);
+      cout << "barbar is ready for hair cut " << endl;
+      sem_wait(&barbar_free);
+      //sleep(1); // cutting takes time
+      cout << "barbar has got free\n";
+      sem_post(&barbar_free);
+      sem_post(&mutex);
+
+      // customer is leaving
+    }
+    else if(barbar_state == BARBAR_FREE && empty_seats >= seats ){
+      // barbasr is sleeping
+      barbar_state = 2;
+      cout << "barbar is sleeping ...\n";
+      sem_wait(&barbar_free);
+    }
+
+    leave_customer();
+  }
+
+  void wake_barber(){
+    if(barbar_state == BARBAR_SLEEPING){
+      // if barbar is sleeping then wake it up
+      cout << "waking the barbar up \n";
+      sem_post(&barbar_free);
+      barbar_state = BARBAR_FREE;
+    }
+  
+  }
+
+  void sleep_barber(){
+   if(empty_seats >= seats){
+      // and let the barbar sleep      
+      sem_wait(&mutex);            
+      barbar_state = BARBAR_SLEEPING;
+      cout << "no customer at shop \n";
+      cout << "barbar has slept\n";
+      sem_post(&barbar_free);
+      
+      // new customer can come after leaving of this customer
+      sem_post(&arival_lock);
+      sem_post(&mutex);
+    } 
+  }
+  
+  void add_customer(){
+    if(empty_seats == 0) {cout << "no space, customer is leaving ...\n";}
+    // if there is capacity customer comes in
+    else if(empty_seats == 1){
+      // last comer will lock the arival
+      sem_wait(&mutex);
+      empty_seats = empty_seats - 1;
+      sem_wait(&arival_lock);
+      sem_post(&mutex);      
+    }
+    else{
+      sem_wait(&mutex);
+      cout << "customer joined ... \n";
+      empty_seats = empty_seats -1;
+      wake_barber();
+      sem_post(&mutex);
+      //custormer has joined, hair cutting may start
+      hair_cut();
+    }
+    
+  }
+  void leave_customer(){
+      sem_wait(&mutex);
+      cout << "customer left ... \n";
+      empty_seats = empty_seats +1;
+      cout << "empty seats " << empty_seats << endl;
+      sem_post(&mutex);
+
+      sleep_barber();
+  }
+};
+
+
+HairSaloon saloon(20);
+int n=200; // number of customers
+int main(){
+
+  pthread_t *customers = new pthread_t[n];
+  for(int i=0; i< n; i++){
+    pthread_create(&customers[i], NULL, &goToHairSaloon, NULL);
+  }
+
+  for(int i=0; i< n; i++){
+    pthread_join(customers[i],NULL);    
+  }
+
+  return 0;
+}
+
+void *goToHairSaloon(void *){
+  saloon.add_customer();
+  return NULL;
+}
+
+//==================================
+#include <iostream>
+#include <pthread.h>
+#include <semaphore.h>
+
+using namespace std;
+
+pthread_mutex_t mutex;
+sem_t lock;
+
+void* routine(void *p){
+  while(1){
+    //pthread_mutex_lock(&mutex);
+    sem_wait(&lock);
+    cout << "----------------------------\n";
+    pthread_t self = pthread_self();
+    cout << self << endl;
+    cout << *(string *)p << endl;
+    sem_post(&lock);
+    //pthread_mutex_unlock(&mutex);
+  }
+  return p;
+}
+
+int main(){
+  sem_init(&lock,0,1);
+  
+  pthread_t p1,p2;
+  string s1 = "p1 thread";
+  string s2 = "p2 thread";
+  pthread_create(&p1,NULL,&routine,&s1);
+  pthread_create(&p2,NULL,&routine,&s2);
+
+  pthread_join(p1,NULL);
+  pthread_join(p2,NULL);
+}
+//==================================

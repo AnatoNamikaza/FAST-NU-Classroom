@@ -1,0 +1,48 @@
++Answer:
+____________________________________________________________________________________________________________________________
+
+Global variable:
+	int N = 0;
+
+===========================
+
+Note: "[->f]" stands for cast to float e.g in programing 2 is casted to float using (float)2
+
+Declare Function recurrence with parameter float Current, float Sum and int i
+
+	Check if (i <= N)
+		begin
+			Declare 2 float variables:
+				New_Current = ( ( 2[->f] / i[->f] ) * Sum[->f] ) + i,
+				New_Sum = Sum + New_Current;
+		
+			return result of Function call (recurrence(New_Current, New_Sum, i + 1); ) 
+		end
+	else
+		return Current
+
+recurrence Function return a float value
+
+===========================
+
+Declare Function Recurrence_Method that returns a float value
+
+	Declare 2 float variables:
+		Current = 1, Sum = 1;
+	
+	return the value of Function recurrence(Current, Sum, 1);
+
+Recurrence_Method Function return a float value
+
+===========================
+
+Declare Function main
+
+	Input "N" from user using "Cin"
+
+	Using "Cout" to display result of (
+	Calling Function Recurrence_Method: Recurrence_Method(); )
+	
+	print newline charactor
+
+main Function return 0 to show program executed ok

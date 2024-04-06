@@ -1,0 +1,264 @@
+Name: Abdul Rehman
+
+Roll No: 19L-1135
+
+Section: CS_4A
+
+____________________________________________________________________________________________________________________________
+
+
++Question#1
+____________________________________________________________________________________________________________________________
+
+void Counted_Value_Checker(int Arr[], int tmp[], int& Counted_Value, int Nth, int Left_Side, int Right_Side) {
+	int Mid_Point = (Left_Side + Right_Side) / 2, k = Left_Side, Index = Left_Side, i = Left_Side, j = Mid_Point + 1;
+
+	do {
+		if ((Arr[Index] - Arr[j]) < -Nth) Index++;
+		if ((Arr[Index] - Arr[j]) == -Nth)
+			Counted_Value++, cout << "Set " << Counted_Value << " " << Arr[Index] << "," << Arr[j] << "\n", Index++;
+		if ((Arr[Index] - Arr[j]) > -Nth)j++;
+	} while (Index <= Mid_Point && j <= Right_Side);
+
+	Index = Left_Side, j = Mid_Point + 1;
+
+	do {
+		if ((Arr[Index] - Arr[j]) < Nth)Index++;
+		if ((Arr[Index] - Arr[j]) == Nth)
+			Counted_Value++, cout << "Pair " << Counted_Value << " " << Arr[Index] << " " << Arr[j] << "\n", Index++;
+		if ((Arr[Index] - Arr[j]) > Nth)j++;
+	} while (Index <= Mid_Point && j <= Right_Side);
+
+	j = Mid_Point + 1, Index = Left_Side;
+
+	do  if (Arr[i] < Arr[j])tmp[k++] = Arr[i++]; else tmp[k++] = Arr[j++]; while (i <= Mid_Point && j <= Right_Side);
+
+	do 	tmp[k++] = Arr[i++]; while (i <= Mid_Point);
+	do 	tmp[k++] = Arr[j++]; while (j <= Right_Side);
+
+	int v = Left_Side;
+	do 	Arr[v] = tmp[v], v++; while (v <= Right_Side);
+}
+
+int Difference(int Arr[], int tmp[], int& Counted_Value, int Nth, int Left_Side, int Right_Side) {
+
+	int Mid_Point = (Left_Side + Right_Side) / 2;
+	if ( Right_Side > Left_Side )
+		Difference(Arr, tmp, Counted_Value, Nth, Left_Side, Mid_Point),
+		Difference(Arr, tmp, Counted_Value, Nth, Mid_Point + 1, Right_Side),
+		Counted_Value_Checker(Arr, tmp, Counted_Value, Nth, Left_Side, Right_Side);
+	else return 0;
+}
+
+int Diff_Finder(int Arr[], int size, int Nth) {
+
+	int* tmp = new int[size], Counted_Value = 0;
+	Difference(Arr, tmp, Counted_Value, Nth, 0, size - 1);
+	return Counted_Value;
+}
+
+____________________________________________________________________________________________________________________________
+
++Question#2
+____________________________________________________________________________________________________________________________
+
+Declare Function smallerIndex with parameter int array, value_to_find, First_Index, Last_Index
+
+	Declare 1 Integer variables: Found_value_index = ( (First_Index + Last_Index) / 2 )
+
+	Check if (First_Index <= Last_Index)
+
+		if condition found true then
+
+				Check if (array[Found_value_index] < value_to_find)
+
+					return smallerIndex(array, value_to_find, Found_value_index + 1, Last_Index)
+
+				else Check if (array[Found_value_index] == value_to_find)
+
+					return Found_value_index
+
+				else return smallerIndex(array, value_to_find, First_Index, Found_value_index - 1)
+
+		else
+
+			return variable Found_value_index
+
+smallerIndex Function return variable Found_value_index to the Function in which it was called
+
+==========
+
+Declare Function MergeSort with parameter pass by reference int array1, array2, array3, and sizes of these arrays
+
+	Declare 3 Integer variables:
+		i = 0, Index = 0, Tvalue = -1, verify = 0
+	
+	Start a Do-While loop with terminate condition ( i < size of array2 )
+	
+		Assigning verify equal to smallerIndex(array1, array2[i], 0, Array1's Size -1)		
+
+		Check if (array1[verify] <= arr2[i])
+
+			if condition found true then
+
+				Declare 1 Integer variables: j = Tvalue + 1
+
+				Start a Do-While loop with terminate condition ( j < verify )
+
+					Assign variable Index incremented by 1
+		
+					Assign variable array3[Index] equal to array1[i]
+	
+					Assign increment variable j by 1
+	
+				loop terminated when condition ( j < verify ) is violated
+
+				Assign variable Tvalue equal to Index
+
+			end of check
+
+		Assign variable Index incremented by 1
+
+		Assign variable array3[Index] equal to array2[i]
+		
+	loop terminated when condition ( i < size of array2 ) is violated
+
+
+	Assign variable i equal to Tvalue incremented by 1
+
+	Start a Do-While loop with terminate condition ( i < size of array1 )
+
+		Assign variable Index incremented by 1
+
+		Assign variable array3[Index] equal to array1[i]
+	
+		Assign increment variable i by 1
+
+	loop terminated when condition ( i < size of array1 ) is violated
+
+MergeSort Function return noting as it has type void and transfers control to the Function in which it was called
+
+==========
+
+Declare Function Print_Array with parameter int array and size of that array
+
+   Declare 1 Integer variables:
+	i = 0
+
+   Start a Do-While loop with terminate condition ( i < size of given array)
+
+	print arr[i] then space
+
+	increment variable i by 1
+
+	loop terminated when condition ( i < size of given array) is violated
+
+	print newline charactor
+
+Print_Array Function return noting as it has type void and transfers control to the Function in which it was called
+
+==========
+
+Declare Function main
+
+   Declare 3 Integer Array:
+	arr[] = {13, 23, 35, 45, 60, 91, 94, 100, 120}, arr2[] = {65, 110, 165, 287}
+
+   Declare 3 Integer variable:
+	arrSize = 9, arr2Size = 4, arr3Size = arrSize + arr2Size
+
+   Declare 1 Integer Array:
+	arr3[arr3Size] 
+
+	Calling Function MergeSort:
+		MergeSort(arr, arrSize, arr2, arr2Size, arr3, arr3Size)
+
+	Calling Function Print_Array:
+		Print_Array(arr3,arr3Size)		
+
+main Function return 0 to show program executed ok
+
+____________________________________________________________________________________________________________________________
+
++Question#3
+____________________________________________________________________________________________________________________________
+
+Declare Function ClockWiseRotation with parameter int array and size of that array
+
+	Declare 3 Integer variables:
+		Left_Side = 0, Right_Side = size - 1, Mid_Point = 0;
+	
+	Start a Do-While loop with terminate condition ( arr[Right_Side] < arr[Left_Side])
+		Assign variable Mid_Point equal to ((Left_Side + Right_Side) / 2)
+	
+		Check if (arr[Left_Side] < arr[Mid_Point])
+
+			if condition found true then
+
+				Assign variable Left_Side equal to Mid_Point
+
+		else 		Assign variable Right_Side equal to Mid_Point 
+
+	loop terminated when condition ( arr[Right_Side] < arr[Left_Side]) is violated
+
+ClockWiseRotatione Function return variable Left_Side incremented by 1 to the Function in which it was called
+
+==========
+
+Declare Function main
+
+	Declare 1 Integer Array arr[] = {15, 18, 2, 3, 6, 12}
+
+	Declare 1 Integer variable size = 6 // size of arr[]
+
+	Using "Cout" to display result of (
+	Calling Function ClockWiseRotation: ClockWiseRotation(arr,size); )
+	
+	print newline charactor
+
+main Function return 0 to show program executed ok
+
+____________________________________________________________________________________________________________________________
+
++Question#4
+____________________________________________________________________________________________________________________________
+
+Declare Function MaxValue with parameter int array and size of that array
+
+	Declare 3 Integer variables:
+		Left_Side = 0, Right_Side = size - 1, Mid_Point = 0;
+	
+	Start a Do-While loop with terminate condition (Left_Side < Right_Side)
+		Assign variable Mid_Point equal to ((Left_Side + Right_Side) / 2)
+	
+		Check if (arr[Mid_Point] < arr[Mid_Point + 1])
+
+			if condition found true then
+
+					Assign variable Left_Side equal to Mid_Point + 1
+
+			else 		Assign variable Right_Side equal to Mid_Point 
+
+	loop terminated when condition (Left_Side < Right_Side) is violated
+
+MaxValue Function return variable arr[left] to the Function in which it was called
+
+==========
+
+Declare Function main
+
+	Declare 1 Integer Array arr[] = {8, 10, 20, 80, 100, 200, 400, 500, 3, 2, 1}
+
+	Declare 1 Integer variable size = 11 // size of arr[]
+
+	Using "Cout" to display result of (
+	Calling Function MaxValue: MaxValue(arr,size); )
+
+	print newline charactor
+
+main Function return 0 to show program executed ok
+
+____________________________________________________________________________________________________________________________
+
+							Thank You 😊
+____________________________________________________________________________________________________________________________

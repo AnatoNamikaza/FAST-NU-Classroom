@@ -1,0 +1,74 @@
+﻿  Adult.cpp
+  Bogie.cpp
+  kid.cpp
+  main.cpp
+d:\vs\source\repos\oop train\oop train\main.cpp(170): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(175): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+          and
+          [
+              T=float
+          ]
+d:\vs\source\repos\oop train\oop train\main.cpp(178): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+          and
+          [
+              T=float
+          ]
+d:\vs\source\repos\oop train\oop train\main.cpp(238): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(260): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(266): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(272): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(279): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(286): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(293): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(301): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  Person.cpp
+  Train.cpp
+d:\vs\source\repos\oop train\oop train\train.cpp(63): warning C4244: 'argument': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+d:\vs\source\repos\oop train\oop train\train.cpp(64): warning C4244: 'argument': conversion from 'T' to 'float', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+d:\vs\source\repos\oop train\oop train\train.cpp(64): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\train.cpp(78): warning C4244: 'argument': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+d:\vs\source\repos\oop train\oop train\train.cpp(79): warning C4244: 'argument': conversion from 'T' to 'float', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+d:\vs\source\repos\oop train\oop train\train.cpp(84): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\train.cpp(90): warning C4244: 'argument': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+d:\vs\source\repos\oop train\oop train\train.cpp(91): warning C4244: 'argument': conversion from 'T' to 'float', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+d:\vs\source\repos\oop train\oop train\train.cpp(502): warning C4101: 'ch': unreferenced local variable
+main.obj : error LNK2001: unresolved external symbol "__declspec(dllimport) public: void __cdecl sf::SoundSource::setVolume(float)" (__imp_?setVolume@SoundSource@sf@@QEAAXM@Z)
+main.obj : error LNK2001: unresolved external symbol "__declspec(dllimport) public: bool __cdecl sf::SoundBuffer::loadFromFile(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const &)" (__imp_?loadFromFile@SoundBuffer@sf@@QEAA_NAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z)
+main.obj : error LNK2001: unresolved external symbol "__declspec(dllimport) public: __cdecl sf::SoundBuffer::~SoundBuffer(void)" (__imp_??1SoundBuffer@sf@@QEAA@XZ)
+main.obj : error LNK2001: unresolved external symbol "__declspec(dllimport) public: __cdecl sf::SoundBuffer::SoundBuffer(void)" (__imp_??0SoundBuffer@sf@@QEAA@XZ)
+main.obj : error LNK2001: unresolved external symbol "__declspec(dllimport) public: void __cdecl sf::Sound::setBuffer(class sf::SoundBuffer const &)" (__imp_?setBuffer@Sound@sf@@QEAAXAEBVSoundBuffer@2@@Z)
+main.obj : error LNK2001: unresolved external symbol "__declspec(dllimport) public: virtual __cdecl sf::Sound::~Sound(void)" (__imp_??1Sound@sf@@UEAA@XZ)
+main.obj : error LNK2001: unresolved external symbol "__declspec(dllimport) public: __cdecl sf::Sound::Sound(void)" (__imp_??0Sound@sf@@QEAA@XZ)
+D:\Vs\source\repos\OOP Train\x64\Release\OOP Train.exe : fatal error LNK1120: 7 unresolved externals

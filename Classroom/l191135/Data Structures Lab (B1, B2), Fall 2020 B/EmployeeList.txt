@@ -1,0 +1,73 @@
+18
+
+9
+Ali Akram
+25000
+
+254
+Yaseen Imran
+40000
+
+111
+Abdul Monim
+40000
+
+6
+Momin
+70000
+
+5
+Ali
+31000
+
+4
+Farooq Khan
+45000
+
+176
+Danial
+35000
+
+101
+Ibtissam Jameel
+33000
+
+153
+Zayd
+30000
+
+10
+Tania Ch
+45000
+
+16
+Ahmed
+25000
+
+231
+Ahmed
+55000
+
+43
+Umer Niazi
+50000
+
+15
+Haroon
+34000
+
+98
+Nimra
+38000
+
+1
+Tariq
+45000
+
+2
+Umer
+52000
+
+3
+Ali
+31500

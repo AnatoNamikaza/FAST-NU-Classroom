@@ -1,0 +1,153 @@
+----Q1_1
+
+select distinct creators.c_id from creators join art_piece_details 
+on creators.c_id = art_piece_details.creator_id 
+where ( select count(*) from (select * from creators join art_piece_details 
+on creators.c_id = art_piece_details.creator_id) as T
+where T.c_id = creator_id) >
+( select count(*) from (select * from creators join art_piece_details 
+on creators.c_id = art_piece_details.creator_id) as T
+where T.c_id = creator_Trainer_id)
+
+----Q1_2
+select creators.first_name+' '+creators.last_name as creators from creators join art_piece_details
+on  creators.c_id = art_piece_details.creator_id 
+where  art_piece_details.art_id in (
+select art_pieces.art_id from art_pieces
+except
+select sale.art_id from sale
+)
+----Q1_3
+select*
+from creators join art_piece_details
+on  creators.c_id = art_piece_details.creator_id 
+join art_pieces on art_piece_details.art_id = art_pieces.art_id
+
+----Q2_1
+create function bight_trainee(@id int = 0)
+returns int
+as begin
+return (select top(1) art_piece_details.creator_id from art_piece_details 
+	where art_piece_details.creator_id in(
+	select c_id from creators where @id = creators.creator_Trainer_id)
+	group by art_piece_details.creator_id
+	order by count(art_piece_details.creator_id) desc
+	)
+end
+
+----Q2_2
+create function no_trainee(@id int)
+returns int
+as begin
+return (select count(c_id) from creators where @id = creators.creator_Trainer_id)
+end
+
+----Q2_3
+create function bight_trainee(@id int)
+returns table
+as	
+return (select @id, (select creators.first_name+' '+creators.last_name from creators where c_id =@id) as Tname, c_id, creators.first_name+' '+creators.last_name as Te_name, (select count(c_id) from creators where @id = creators.creator_Trainer_id) as total_trainee from creators
+		where c_id = (select top(1) art_piece_details.creator_id from art_piece_details 
+		where art_piece_details.creator_id in(
+		select c_id from creators where @id = creators.creator_Trainer_id)
+		group by art_piece_details.creator_id
+		order by count(art_piece_details.creator_id) desc
+		)
+
+----Q3
+create trigger lock_task
+on database 
+for drop_database, alter_database
+as 
+print 'Dropping or Modifying is not allowed by the admin (-__-)'
+rollback;
+go
+
+----Q4
+create trigger trainer_pass
+on creators
+AFTER update
+as begin
+	
+	declare @id int = (select inserted.creator_Trainer_id from inserted)
+	declare @id2 int = (select inserted.c_id from inserted)
+	
+	if (select count(*) from art_piece_details where art_piece_details.creator_id = @id)
+	> (select count(*) from art_piece_details where art_piece_details.creator_id = @id2)
+	begin
+		if (select count(*) from ( select distinct art_piece_details.type_id from art_piece_details where art_piece_details.creator_id = @id) as T1)
+		> (select count(*) from ( select distinct art_piece_details.type_id from art_piece_details where art_piece_details.creator_id = @id2) as T2)
+		begin
+			if (select T1.type_id from ( select distinct art_piece_details.type_id from art_piece_details where art_piece_details.creator_id = @id) as T1)
+				IN (select T2.type_id from ( select distinct art_piece_details.type_id from art_piece_details where art_piece_details.creator_id = @id2) as T2)
+			begin
+				print 'All check (^__^)'
+			end	
+			else
+			begin
+				print 'No same art_piece_type (-__-)'
+				rollback
+			end
+		end	
+		begin
+			print 'type of art pieces less than trainee (-__-)'
+			rollback
+		end
+	end	
+	begin
+		print 'No. of art pieces less than trainee (-__-)'
+		rollback
+	end
+end
+
+----Q5
+create procedure sale_piece
+@art_name varchar(30) = null,
+@quantity int = 0,
+@p_id int = 0
+as begin
+
+	declare @a_q int = (select quantity_available from art_pieces where art_pieces.art_name = @art_name)
+	declare @a_id int = (select art_id from art_pieces where art_pieces.art_name = @art_name)
+
+	if @quantity <= @a_q
+	begin
+		declare @s_id int = (select top(1) s_id from sale order by s_id desc)
+
+		if @s_id is null
+		begin
+			set @s_id = 0
+		end
+
+		set @s_id +=1
+
+		insert into sale values
+		(
+		@s_id,
+		@a_id,
+		GETDATE(),
+		@quantity,
+		@p_id
+		)
+
+		update art_pieces set art_pieces.quantity_available -= @quantity where art_pieces.art_id= @a_id
+
+		Print 'Success (^__^)'
+	end
+	else
+	begin
+		Print 'Insufficient qunatity given (-__-)'
+	end
+end
+
+
+execute sale_piece
+@art_name = 'big man',
+@quantity = 2,
+@p_id = 1
+go
+
+
+
+
+

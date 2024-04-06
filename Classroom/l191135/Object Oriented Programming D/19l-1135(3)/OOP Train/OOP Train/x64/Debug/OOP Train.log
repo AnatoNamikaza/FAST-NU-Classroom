@@ -1,0 +1,64 @@
+﻿  Train.cpp
+d:\vs\source\repos\oop train\oop train\train.cpp(63): warning C4244: 'argument': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+d:\vs\source\repos\oop train\oop train\train.cpp(64): warning C4244: 'argument': conversion from 'T' to 'float', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+d:\vs\source\repos\oop train\oop train\train.cpp(64): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\train.cpp(78): warning C4244: 'argument': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+d:\vs\source\repos\oop train\oop train\train.cpp(79): warning C4244: 'argument': conversion from 'T' to 'float', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+d:\vs\source\repos\oop train\oop train\train.cpp(84): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\train.cpp(90): warning C4244: 'argument': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+d:\vs\source\repos\oop train\oop train\train.cpp(91): warning C4244: 'argument': conversion from 'T' to 'float', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+d:\vs\source\repos\oop train\oop train\train.cpp(502): warning C4101: 'ch': unreferenced local variable
+  main.cpp
+d:\vs\source\repos\oop train\oop train\main.cpp(148): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(152): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+          and
+          [
+              T=float
+          ]
+d:\vs\source\repos\oop train\oop train\main.cpp(155): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+          and
+          [
+              T=float
+          ]
+d:\vs\source\repos\oop train\oop train\main.cpp(215): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(237): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(243): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(249): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(256): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(263): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(270): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+d:\vs\source\repos\oop train\oop train\main.cpp(278): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  Generating Code...
+  OOP Train.vcxproj -> D:\Vs\source\repos\OOP Train\x64\Debug\OOP Train.exe
